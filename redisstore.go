@@ -1,10 +1,9 @@
 package gocaptcha
 
 import (
-	"bytes"
 	"crypto/md5"
-	"encoding/gob"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -71,7 +70,7 @@ func (this *CaptchaRedisStore) Add(captcha *CaptchaInfo) string {
 
 	val, err := this.encodeCaptchaInfo(captcha)
 	if err == nil {
-		if seterr := this.stg.SetEx(key, this.lifeTime, string(val)); seterr != nil {
+		if seterr := this.stg.SetEx(key, this.lifeTime, string(val)); seterr.Err() != nil {
 			log.Printf("add key in redis error:%s", seterr)
 		}
 	}
@@ -81,7 +80,7 @@ func (this *CaptchaRedisStore) Add(captcha *CaptchaInfo) string {
 func (this *CaptchaRedisStore) Update(key string, captcha *CaptchaInfo) bool {
 	val, err := this.encodeCaptchaInfo(captcha)
 	if err == nil {
-		if seterr := this.stg.Set(key, string(val)); seterr != nil {
+		if seterr := this.stg.Set(key, string(val)); seterr.Err() != nil {
 			log.Printf("set key in redis error:%s", seterr)
 			return false
 		} else {
@@ -110,21 +109,10 @@ func (this *CaptchaRedisStore) OnDestruct() {
 }
 
 func (this *CaptchaRedisStore) encodeCaptchaInfo(captcha *CaptchaInfo) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	encoder := gob.NewEncoder(buf)
-	err := encoder.Encode(captcha)
-	if err != nil {
-		log.Printf("encode captcha info error:%s", err)
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return json.Marshal(captcha)
 }
 
 func (this *CaptchaRedisStore) decodeCaptachInfo(b []byte, ret *CaptchaInfo) {
-	buf := bytes.NewBuffer(b)
-	decoder := gob.NewDecoder(buf)
-	if err := decoder.Decode(ret); err != nil {
-		log.Printf("decode captcha info error:%s", err)
-	}
+	json.Unmarshal(b, ret)
 	return
 }

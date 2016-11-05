@@ -12,7 +12,7 @@ import (
 // text:the content text,for the image display and user to recognize
 // createTime:the time when the captcha is created
 type CaptchaInfo struct {
-	Text       string
-	CreateTime time.Time
-	ShownTimes int
+	Text       string    `json:"text"`
+	CreateTime time.Time `json:"create_time"`
+	ShownTimes int       `json:"show_times"`
 }
