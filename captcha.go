@@ -90,11 +90,11 @@ func (captcha *Captcha) GetKey(length int) (string, error) {
 func (captcha *Captcha) Verify(key, textToVerify string) (bool, string) {
 	info := captcha.store.Get(key)
 	if nil == info {
-		return false, "captcha info not found"
+		return false, "无验证码信息"
 	}
 
 	if info.CreateTime.Add(captcha.captchaConfig.LifeTime).Before(time.Now()) {
-		return false, "captcha expires"
+		return false, "验证码已过期"
 	}
 
 	verified := false
@@ -105,7 +105,7 @@ func (captcha *Captcha) Verify(key, textToVerify string) (bool, string) {
 	}
 
 	if !verified {
-		return false, "captcha text not match"
+		return false, "错误验证码"
 	}
 
 	captcha.store.Del(key)
@@ -117,11 +117,11 @@ func (captcha *Captcha) GetImage(key string) (image.Image, error) {
 
 	info := captcha.store.Get(key)
 	if nil == info {
-		return nil, errors.New("captcha info not found")
+		return nil, errors.New("无验证码信息")
 	}
 
 	if info.CreateTime.Add(captcha.captchaConfig.LifeTime).Before(time.Now()) {
-		return nil, errors.New("captcha expires")
+		return nil, errors.New("验证码已过期")
 	}
 
 	if captcha.captchaConfig.ChangeTextOnRefresh {
